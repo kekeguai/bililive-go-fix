@@ -7,6 +7,25 @@
 
 Bililive-go是一个支持多种直播平台的直播录制工具   
 
+### 一键部署与管理
+
+本项目配套提供独立的 Linux 一键部署与管理工具 [`bililive-go-one`](https://github.com/kekeguai/bililive-go-one)。它负责安装与管理 bililive-go，不改变本项目本身的多平台录制功能；两个仓库分工清晰、配套使用。
+
+**工具优势：**
+- 自动安装 FFmpeg 和对应系统架构的 bililive-go 预编译版本，无需准备编译环境。
+- 支持 apt、dnf、yum、pacman 等常见 Linux 包管理器，并可自定义 Web/RPC 监听端口。
+- 提供 `bili start`、`stop`、`restart`、`status`、`update`、`log`、`port` 等命令行管理入口。
+- 支持 systemd 开机自启和异常拉起；没有 systemd 时退化为后台进程运行。
+- 更新前备份当前二进制，下载失败时自动回滚；可联动 ufw / firewalld 管理本机防火墙规则。
+
+**快速安装（Linux，需要 root 或 sudo）：**
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/kekeguai/bililive-go-one/refs/heads/main/bili.sh -o bili.sh && sudo bash bili.sh install
+```
+
+安装与管理脚本、支持的发行版和架构、命令说明及注意事项，请查看 [`bililive-go-one` 项目 README](https://github.com/kekeguai/bililive-go-one)。
+
 ### 第三方生态
 
 > 安全提示：Bililive-go 未审计任何第三方代码的安全性、合规性和可用性。是否安装或使用来自第三方的脚本、插件、扩展等内容，请自行判断并承担相应风险。
