@@ -1,9 +1,7 @@
 package build
 
 import (
-	"bytes"
 	"fmt"
-	"html/template"
 	"os"
 	"os/exec"
 	"runtime"
@@ -27,7 +25,6 @@ const constsPath = "github.com/bililive-go/bililive-go/src/consts"
 // GetBuildFlags 返回构建参数
 func GetBuildFlags(isDev bool) BuildFlags {
 	now := fmt.Sprintf("%d", time.Now().Unix())
-	var buf bytes.Buffer
 
 	// 版本号优先级：环境变量 APP_VERSION > git tag
 	appVersion := os.Getenv("APP_VERSION")
@@ -35,37 +32,26 @@ func GetBuildFlags(isDev bool) BuildFlags {
 		appVersion = getGitTagString()
 	}
 
-	data := map[string]string{
-		"ConstsPath": constsPath,
-		"Now":        now,
-		"AppVersion": appVersion,
-		"GitHash":    getGitHash(),
-	}
-
-	ldFlagsTmpl := "-X {{.ConstsPath}}.BuildTime={{.Now}} " +
-		"-X {{.ConstsPath}}.AppVersion={{.AppVersion}} " +
-		"-X {{.ConstsPath}}.GitHash={{.GitHash}}"
+	gitHash := getGitHash()
+	ldFlags := fmt.Sprintf("-X %s.BuildTime=%s -X %s.AppVersion=%s -X %s.GitHash=%s",
+		constsPath, now, constsPath, appVersion, constsPath, gitHash)
 
 	// 从环境变量获取 Sentry DSN
 	sentryDSN := os.Getenv("SENTRY_DSN")
 	if sentryDSN != "" {
-		ldFlagsTmpl += " -X main.SentryDSN={{.SentryDSN}}"
-		data["SentryDSN"] = sentryDSN
+		ldFlags += fmt.Sprintf(" -X main.SentryDSN=%s", sentryDSN)
 	}
 
 	// 禁用遥测统计（用于本地测试，避免污染生产统计数据）
 	if os.Getenv("NO_TELEMETRY") == "1" {
-		ldFlagsTmpl += " -X main.DisableTelemetry=1"
+		ldFlags += " -X main.DisableTelemetry=1"
 	}
-
-	t := template.Must(template.New("ldFlags").Parse(ldFlagsTmpl))
-	t.Execute(&buf, data)
 
 	if isDev {
 		return BuildFlags{
 			Tags:         "dev",
 			GcFlags:      "all=-N -l", // 禁用优化以便调试
-			LdFlags:      strings.TrimSpace(buf.String()),
+			LdFlags:      strings.TrimSpace(ldFlags),
 			DebugLdFlags: "", // dev 模式保留调试符号
 		}
 	}
@@ -73,7 +59,7 @@ func GetBuildFlags(isDev bool) BuildFlags {
 	return BuildFlags{
 		Tags:         "release",
 		GcFlags:      "",
-		LdFlags:      strings.TrimSpace(buf.String()),
+		LdFlags:      strings.TrimSpace(ldFlags),
 		DebugLdFlags: "-s -w", // release 模式去除调试符号
 	}
 }
