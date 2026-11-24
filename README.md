@@ -11,6 +11,8 @@ Bililive-go是一个支持多种直播平台的直播录制工具
 
 本项目配套提供独立的 Linux 一键部署与管理工具 [`bililive-go-one`](https://github.com/kekeguai/bililive-go-one)。它负责安装与管理 bililive-go，不改变本项目本身的多平台录制功能；两个仓库分工清晰、配套使用。
 
+本仓库提供的本地修复构建沿用对应上游正式版本号，并使用 SemVer 构建元数据标识修复内容（例如 `v0.8.4+missevan.fix`），避免被更新检查误判为低于相同版本号的上游正式版。
+
 **工具优势：**
 - 自动安装 FFmpeg 和对应系统架构的 bililive-go 预编译版本，无需准备编译环境。
 - 支持 apt、dnf、yum、pacman 等常见 Linux 包管理器，并可自定义 Web/RPC 监听端口。
